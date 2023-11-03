@@ -34,3 +34,4 @@ build/
 /src/test
 !/src/test/java/com/testcontainers/catalog/.keep
 !/src/test/resources/logback-test.xml
+!/src/test/resources/P101.jpg
