@@ -169,7 +169,7 @@ Now, you can invoke the APIs using CURL or Postman or any of your favourite HTTP
 
 ### Create a product
 ```shell
-curl -v -X "GET" 'http://localhost:8080/api/products' \
+curl -v -X "POST" 'http://localhost:8080/api/products' \
 --header 'Content-Type: application/json' \
 --data '{
 "code": "P201",
@@ -337,7 +337,7 @@ So, when we make a call to `inventory-service` from our application, it will cal
 Now restart the `TestApplication` and invoke the `GET /api/products/P101` API again.
 
 ```shell
-curl --location 'http://localhost:8080/api/products/P101'
+curl -X "GET" 'http://localhost:8080/api/products/P101'
 ```
 
 You should see the response similar to the following:
