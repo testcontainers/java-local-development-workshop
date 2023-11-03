@@ -1,6 +1,6 @@
 # Step 4: Connect to services
 
-In the previous step, we managed to run the application and invoke our API endpoints.
+In the previous step, we get our application running locally and invoked our API endpoints.
 
 What if you want to check the data in the database or the messages in Kafka?
 
@@ -8,21 +8,20 @@ Testcontainers by default start the containers and map the exposed ports on a ra
 Each time you restart the application, the mapped ports will be different.
 This is good for testing, but for local development and debugging, it would be convenient to be able to connect on fixed ports.
 
-This is where Testcontainers Desktop comes in handy.
+This is where **Testcontainers Desktop** helps you.
 
 ## Testcontainers Desktop
-https://testcontainers.com/guides/simple-local-development-with-testcontainers-desktop/
+Testcontainers Desktop application provides several features that helps you with local development and debugging.
+To learn more about Testcontainers Desktop, check out the [Simple local development with Testcontainers Desktop](https://testcontainers.com/guides/simple-local-development-with-testcontainers-desktop/) guide.
 
-The Testcontainers Desktop app makes it easy to use fixed ports for the container services
-so that you can always connect to those services using the same configured fixed port.
-
-We can use Testcontainers Desktop fixed port support to connect to the PostgreSQL database running as a Docker container.
+The Testcontainers Desktop app makes it easy to use fixed ports for your containers,
+so that you can always connect to those services using the same fixed port.
 
 ## Connect to PostgreSQL database
-Click on Testcontainers Desktop → select Services → Open config location.
+Click on **Testcontainers Desktop → select Services → Open config location...**.
 
-In the opened directory there would be a `postgres.toml.example` file. Rename it to `postgres.toml` file, 
-and it should contain the following configuration:
+In the opened directory there would be a `postgres.toml.example` file. 
+Make a copy of it and rename it to `postgres.toml` file and update it with the following content:
 
 ```toml
 ports = [
@@ -43,7 +42,7 @@ psql -h localhost -p 5432 -U test -d test
 While you can use any of your existing tools to connect to these containerized services,
 you can also run a helper container that will allow you to connect to the services.
 
-For example, you can start a Kafka Control Center container and connect to the Kafka instance via web browser.
+For example, you can start a **Kafka Control Center** container and connect to the Kafka instance via web browser.
 
 Let's update `KafkaContainer` configuration in `ContainersConfig` as follows:
 
@@ -146,7 +145,7 @@ We are using the `confluentinc/cp-enterprise-control-center:7.5.0` image to star
 The Control Center is a web-based tool for managing and monitoring Apache Kafka clusters.
 Let's map its port 9021 to the host's port 19021.
 
-Create kafka-control-center.toml file in the Testcontainers Desktop config directory with the following content:
+Create `kafka-control-center.toml` file in the Testcontainers Desktop config directory with the following content:
 
 ```toml
 ports = [
@@ -159,10 +158,10 @@ Now, if you restart the application, you should be able to connect to the Kafka 
 
 * Invoke the Product Image Upload API
 * Go to the Kafka Control Center at http://localhost:19021/
-* Click on the Cluster tab
-* Click on the Topics tab
+* Click on the **Cluster** tab
+* Click on the **Topics** tab
 * Click on the topic `product-image-updates`
-* Click on the Messages tab
+* Click on the **Messages** tab
 
 You should be able to see the messages sent to Kafka.
 

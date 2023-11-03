@@ -24,8 +24,7 @@ import org.springframework.test.context.ActiveProfiles;
 @SpringBootTest(
     webEnvironment = RANDOM_PORT,
     properties = {
-        "spring.kafka.consumer.auto-offset-reset=earliest",
-        "spring.cloud.aws.region.static=us-east-1"
+        "spring.kafka.consumer.auto-offset-reset=earliest"
 })
 @Import(ContainersConfig.class)
 public abstract class BaseIntegrationTest {
@@ -40,12 +39,12 @@ public abstract class BaseIntegrationTest {
 }
 ```
 
-* We have reused the `ContainersConfig` class that we created in the previous steps.
-* We have configured the `spring.kafka.consumer.auto-offset-reset` property to `earliest` to make sure that we can read all the messages from the beginning of the topic.
+* We have reused the `ContainersConfig` class that we created in the previous steps to define all the required containers.
+* We have configured the `spring.kafka.consumer.auto-offset-reset` property to `earliest` to make sure that we read all the messages from the beginning of the topic.
 * We have configured the `RestAssured.port` to the dynamic port of the application that is started by Spring Boot.
 
 ## First Test - Verify Application Context Starts Successfully
-Let's create/update the test class `ApplicationTests` under `src/test/java` with the following test:
+Let's create the test class `ApplicationTests` under `src/test/java` with the following test:
 
 ```java
 package com.testcontainers.catalog;
@@ -58,6 +57,8 @@ class ApplicationTests extends BaseIntegrationTest {
     void contextLoads() {}
 }
 ```
+
+If you run this test, it should pass and that means we have successfully configured the application to start with all the required containers.
 
 ## Lets add tests for ProductController API endpoints
 Before writing the API tests, let's create `src/test/resources/test-data.sql` to insert some test data into the database as follows:
@@ -115,6 +116,8 @@ class ProductControllerTest extends BaseIntegrationTest {
 
 Next, let's add a test for product image upload API endpoint.
 
+Copy any sample image with name `P101.jpg` into `src/main/resources`.
+
 ```java
 package com.testcontainers.catalog.api;
 
@@ -170,3 +173,45 @@ class ProductControllerTest extends BaseIntegrationTest {
     }
 }
 ```
+
+This test checks the following:
+* Before uploading the image, the product image URL is null for the product with code P101.
+* Invoke the Product Image Upload API endpoint with the sample image file.
+* Assert that the response status is 200 and the response body contains the image file name.
+* Assert that the product image URL is updated in the database after the image upload.
+
+Next, let's add a test for getting the product information by code.
+
+```java
+@Sql("/test-data.sql")
+class ProductControllerTest extends BaseIntegrationTest {
+    @Autowired
+    ProductService productService;
+
+    @Test
+    void getProductByCodeSuccessfully() {
+        String code = "P101";
+
+        Product product = given().contentType(ContentType.JSON)
+                .when()
+                .get("/api/products/{code}", code)
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(Product.class);
+
+        assertThat(product.code()).isEqualTo(code);
+        assertThat(product.name()).isEqualTo("Product %s".formatted(code));
+        assertThat(product.description()).isEqualTo("Product %s description".formatted(code));
+        assertThat(product.price().compareTo(new BigDecimal("34.0"))).isEqualTo(0);
+        assertThat(product.available()).isTrue();
+    }
+}
+```
+
+## Assignment
+* Write tests for create product API fails if the payload is invalid.
+* Write tests for create product API fails if the product code already exists.
+* Write tests for get product by code API fails if the product code does not exist.
+* Write tests for get product by code API that returns `"available": false` when WireMock server return quantity=0.
+* Write tests for get product by code API that returns `"available": true` from WireMock server throws Exception.

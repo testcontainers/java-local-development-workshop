@@ -1,4 +1,3 @@
-HELP.md
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
@@ -31,3 +30,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+/src/test
+!/src/test/java/com/testcontainers/catalog/.keep
+!/src/test/resources/logback-test.xml

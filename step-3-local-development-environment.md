@@ -1,5 +1,5 @@
 # Step 3: Local Development environment with Testcontainers
-Our application uses PostgreSQL, Kafka, LocalStack. 
+Our application uses PostgreSQL, Kafka, and LocalStack. 
 
 Currently, if you run the `Application.java` from your IDE, you will see the following error:
 
@@ -23,9 +23,10 @@ Consider the following:
 Process finished with exit code 0
 ```
 
-To run the application locally, we need to provision these services.
+To run the application locally, we need to have these services up and running.
+
 Instead of installing these services on our local machine, or using Docker to run these services manually,
-we will use [Spring Boot support for Testcontainers at Development Time](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#features.testing.testcontainers.at-development-time) to provision these services.
+we will use [Spring Boot support for Testcontainers at Development Time](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#features.testing.testcontainers.at-development-time) to provision these services automatically.
 
 > **NOTE**
 >
@@ -63,7 +64,8 @@ First, make sure you have the following Testcontainers dependencies in your `pom
 ```
 
 We will also use **RestAssured** for API testing and **Awaitility** for testing asynchronous processes.
-So, add the following dependencies as well
+
+So, add the following dependencies as well:
 
 ```xml
 <dependency>
@@ -79,6 +81,7 @@ So, add the following dependencies as well
 ```
 
 ## Create ContainersConfig class under src/test/java
+Let's create `ContainersConfig` class under `src/test/java` to configure the required containers.
 
 ```java
 package com.testcontainers.catalog;
@@ -131,17 +134,17 @@ public class ContainersConfig {
 ```
 
 Let's understand what this configuration class does:
-* `@TestConfiguration` annotation indicates that this class should be used for Spring Boot test configuration.
-* Spring Boot provides ServiceConnection support for JdbcConnectionDetails and KafkaConnectionDetails out-of-the-box.
-  So, we configured PostgreSQLContainer and KafkaContainer as beans with @ServiceConnection annotation.
-  This configuration will automatically start these containers and register the DataSource and Kafka connection properties automatically.
-* However, Spring Cloud AWS doesn't provide ServiceConnection support out-of-the-box.
+* `@TestConfiguration` annotation indicates that this configuration class defines the beans that can be used for Spring Boot tests.
+* Spring Boot provides `ServiceConnection` support for `JdbcConnectionDetails` and `KafkaConnectionDetails` out-of-the-box.
+  So, we configured `PostgreSQLContainer` and `KafkaContainer` as beans with `@ServiceConnection` annotation.
+  This configuration will automatically start these containers and register the **DataSource** and **Kafka** connection properties automatically.
+* Spring Cloud AWS doesn't provide ServiceConnection support out-of-the-box [yet](https://github.com/awspring/spring-cloud-aws/issues/793).
   But there is support for [Contributing Dynamic Properties at Development Time](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#features.testing.testcontainers.at-development-time.dynamic-properties).
-  So, we configured LocalStackContainer as a bean and registered the Spring Cloud AWS configuration properties using DynamicPropertyRegistry.
-* We also configured an ApplicationRunner bean to create the AWS resources like S3 bucket upon application startup.
+  So, we configured `LocalStackContainer` as a bean and registered the Spring Cloud AWS configuration properties using `DynamicPropertyRegistry`.
+* We also configured an `ApplicationRunner` bean to create the AWS resources like S3 bucket upon application startup.
   
 ## Create TestApplication class under src/test/java
-Next, let's create a TestApplication class to start the application with the Testcontainers configuration.
+Next, let's create a `TestApplication` class under `src/test/java` to start the application with the Testcontainers configuration.
 
 ```java
 package com.testcontainers.catalog;
@@ -151,20 +154,22 @@ import org.springframework.boot.SpringApplication;
 public class TestApplication {
 
     public static void main(String[] args) {
-        SpringApplication.from(Application::main)
+        SpringApplication
+                //note that we are using Application from src/main/java instead of TestApplication from src/test/java
+                .from(Application::main) 
                 .with(ContainersConfig.class)
                 .run(args);
     }
 }
 ```
 
-Run the TestApplication from our IDE and verify that the application starts successfully.
+Run the `TestApplication` from our IDE and verify that the application starts successfully.
 
-Now, you can invoke the APIs using curl or Postman.
+Now, you can invoke the APIs using CURL or Postman or any of your favourite HTTP Client tools.
 
 ### Create a product
 ```shell
-curl -v --location 'http://localhost:8080/api/products' \
+curl -v -X "GET" 'http://localhost:8080/api/products' \
 --header 'Content-Type: application/json' \
 --data '{
 "code": "P201",
@@ -184,7 +189,7 @@ You should get a response similar to the following:
 
 ### Upload Product Image
 ```shell
-curl --location 'http://localhost:8080/api/products/P101/image' \
+curl -X "POST" 'http://localhost:8080/api/products/P101/image' \
 --form 'file=@"/Users/siva/work/product-p101.jpg"'
 ```
 
@@ -197,7 +202,7 @@ You should see a response similar to the following:
 ### Get a product by code
 
 ```shell
-curl --location 'http://localhost:8080/api/products/P101'
+curl -X "GET" 'http://localhost:8080/api/products/P101'
 ```
 
 You should be able to see the response similar to the following:
@@ -214,7 +219,7 @@ You should be able to see the response similar to the following:
 }
 ```
 
-If you check the application logs, you should see the following logs:
+If you check the application logs, you should see the following error in logs:
 
 ```shell
 com.testcontainers.catalog.domain.internal.DefaultProductService - Error while calling inventory service
@@ -230,7 +235,8 @@ org.springframework.web.client.ResourceAccessException: I/O error on GET request
 	at java.base/java.util.Optional.map(Optional.java:260)
 ```
 
-When we invoke the GET /api/products/{code} API, the application tries to call the inventory service to get the inventory details.
+When we invoke the `GET /api/products/{code}` API endpoint, 
+the application tried to call the inventory service to get the inventory details.
 As the inventory service is not running, we get the above error.
 
 Let's use WireMock to mock the inventory service APIs for our local development and testing.
@@ -245,31 +251,6 @@ Add the following dependency to your `pom.xml`:
     <version>1.0-alpha-13</version>
     <scope>test</scope>
 </dependency>
-```
-
-Next, update the ContainersConfig class to start the WireMock container as well.
-
-```java
-package com.testcontainers.catalog;
-
-...
-...
-import org.wiremock.integrations.testcontainers.WireMockContainer;
-
-@TestConfiguration(proxyBeanMethods = false)
-public class ContainersConfig {
-
-    ...
-    ...
-
-    @Bean
-    WireMockContainer wiremockServer(DynamicPropertyRegistry registry) {
-        WireMockContainer wiremockServer = new WireMockContainer("wiremock/wiremock:3.2.0-alpine")
-                .withMappingFromResource("mocks-config.json");
-        registry.add("application.inventory-service-url", wiremockServer::getBaseUrl);
-        return wiremockServer;
-    }
-}
 ```
 
 Create `src/test/resources/mocks-config.json` to define Mock API behaviour.
@@ -325,13 +306,41 @@ Create `src/test/resources/mocks-config.json` to define Mock API behaviour.
 }
 ```
 
-Now restart the TestApplication and invoke the GET /api/products/P101 API again.
+Next, update the `ContainersConfig` class to configure the `WireMockContainer` as follows:
+
+```java
+package com.testcontainers.catalog;
+
+...
+...
+import org.wiremock.integrations.testcontainers.WireMockContainer;
+
+@TestConfiguration(proxyBeanMethods = false)
+public class ContainersConfig {
+
+    ...
+    ...
+
+    @Bean
+    WireMockContainer wiremockServer(DynamicPropertyRegistry registry) {
+        WireMockContainer wiremockServer = new WireMockContainer("wiremock/wiremock:3.2.0-alpine")
+                .withMappingFromResource("mocks-config.json");
+        registry.add("application.inventory-service-url", wiremockServer::getBaseUrl);
+        return wiremockServer;
+    }
+}
+```
+
+Once the WireMock server is started, we are registering the WireMock server URL as `application.inventory-service-url`.
+So, when we make a call to `inventory-service` from our application, it will call the WireMock server instead.
+
+Now restart the `TestApplication` and invoke the `GET /api/products/P101` API again.
 
 ```shell
 curl --location 'http://localhost:8080/api/products/P101'
 ```
 
-You should the response similar to the following:
+You should see the response similar to the following:
 
 ```json
 {
@@ -347,7 +356,7 @@ You should the response similar to the following:
 
 And there should be no error in the console logs.
 
-Try `curl --location 'http://localhost:8080/api/products/P103'`. 
+Try `curl -X "GET" 'http://localhost:8080/api/products/P103'`. 
 You should get the following response with `"available":false` because we mocked inventory-service such that the quantity for P103 to be 0.
 
 ```json
@@ -361,6 +370,8 @@ You should get the following response with `"available":false` because we mocked
   "available":false
 }
 ```
+
+Now we have the working local development environment with PostgreSQL, Kafka, LocalStack, and WireMock.
 
 ### 
 [Next](step-4-connect-to-services.md)
