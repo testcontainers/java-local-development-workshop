@@ -1,4 +1,4 @@
-# Step 3: Local Development environment with Testcontainers
+# Step 3: Local development environment with Testcontainers
 Our application uses PostgreSQL, Kafka, and LocalStack. 
 
 Currently, if you run the `Application.java` from your IDE, you will see the following error:

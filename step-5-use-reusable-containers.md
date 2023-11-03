@@ -1,4 +1,4 @@
-# Step 5: Use Reusable containers
+# Step 5: Use reusable containers
 
 During the development, you will keep changing the code and verify the behavior either by running the tests 
 or running the application locally. Recreating the containers everytime you restart the application 

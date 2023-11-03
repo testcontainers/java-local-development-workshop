@@ -9,7 +9,7 @@ Testcontainers libraries are compatible with Java 8+, but this workshop uses a S
 
 I would recommend using [SDKMAN](https://sdkman.io/) to install Java on your machine.
 
-## Install Docker
+### Install Docker
 
 Make sure you have a Docker environment available on your machine.
 
@@ -39,7 +39,7 @@ Server: Docker Desktop 4.24.2 (124339)
   ...
 ```
 
-## Install Testcontainers Desktop
+### Install Testcontainers Desktop
 [Testcontainers Desktop](https://testcontainers.com/desktop/) is a companion app for the open source Testcontainers libraries 
 that makes local development and testing with real dependencies simple.
 
