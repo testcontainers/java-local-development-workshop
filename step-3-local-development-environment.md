@@ -86,7 +86,6 @@ Let's create `ContainersConfig` class under `src/test/java` to configure the req
 ```java
 package com.testcontainers.catalog;
 
-import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SQS;
 import static org.testcontainers.utility.DockerImageName.parse;
 
 import com.testcontainers.catalog.domain.FileStorageService;
@@ -121,7 +120,7 @@ public class ContainersConfig {
         registry.add("spring.cloud.aws.credentials.access-key", localStack::getAccessKey);
         registry.add("spring.cloud.aws.credentials.secret-key", localStack::getSecretKey);
         registry.add("spring.cloud.aws.region.static", localStack::getRegion);
-        registry.add("spring.cloud.aws.endpoint", () -> localStack.getEndpointOverride(SQS));
+        registry.add("spring.cloud.aws.endpoint", localStack::getEndpoint);
         return localStack;
     }
 
@@ -155,7 +154,7 @@ public class TestApplication {
 
     public static void main(String[] args) {
         SpringApplication
-                //note that we are using Application from src/main/java instead of TestApplication from src/test/java
+                //note that we are starting our actual Application from within our TestApplication
                 .from(Application::main) 
                 .with(ContainersConfig.class)
                 .run(args);
