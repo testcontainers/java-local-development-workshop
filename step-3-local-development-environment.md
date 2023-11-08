@@ -310,15 +310,12 @@ Next, update the `ContainersConfig` class to configure the `WireMockContainer` a
 ```java
 package com.testcontainers.catalog;
 
-...
-...
 import org.wiremock.integrations.testcontainers.WireMockContainer;
 
 @TestConfiguration(proxyBeanMethods = false)
 public class ContainersConfig {
 
-    ...
-    ...
+    // [...]
 
     @Bean
     WireMockContainer wiremockServer(DynamicPropertyRegistry registry) {
