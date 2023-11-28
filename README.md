@@ -15,3 +15,10 @@ We will work with a Spring Boot application and explore how to:
 * [Step 4: Connect to Services](step-4-connect-to-services.md)
 * [Step 5: Use Reusable Containers](step-5-use-reusable-containers.md)
 * [Step 6: Write Tests](step-6-write-tests.md)
+
+
+## License Summary
+The code in this repository is made available under the MIT license. See the [LICENSE](LICENSE) file for details.
+
+The documentation in this repository is available under the CC BY-NC-ND 4.0 license. See the [LICENSE-docs](LICENSE-docs) file for details.
+If you'd like to run this workshop at your company, please contact us at [hello@atomicjar.com](mailto:hello@atomicjar.com)
