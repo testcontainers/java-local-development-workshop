@@ -367,7 +367,7 @@ You should get the following response with `"available":false` because we mocked
 }
 ```
 
-Now we have the working local development environment with PostgreSQL, Kafka, LocalStack, and WireMock.
+Now we have a working local development environment with PostgreSQL, Kafka, LocalStack, and WireMock.
 
 ### 
 [Next](step-4-connect-to-services.md)

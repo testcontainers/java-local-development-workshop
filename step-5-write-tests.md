@@ -1,4 +1,4 @@
-# Step 6: Let's write tests
+# Step 5: Let's write tests
 So far, we focused on being able to run the application locally without having to install or run any dependent services manually.
 But there is nothing more painful than working on a codebase without a comprehensive test suite.
 
