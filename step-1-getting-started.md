@@ -12,7 +12,7 @@ We would recommend using [SDKMAN](https://sdkman.io/) to install Java on your ma
 ### Install Docker
 You need to have a Docker environment to use Testcontainers.
 
-* You can install any of **Docker Desktop**, **OrbStack**, etc. on your machine.
+* You can use Docker Desktop on your machine.
 * You can use [Testcontainers Cloud](https://testcontainers.com/cloud). If you are going to use Testcontainers Cloud, then you need to install [Testcontainers Desktop](https://testcontainers.com/desktop/) app.
 * If you are using MacOS, you can use Testcontainers Desktop Embedded Runtime.
 
