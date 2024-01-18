@@ -46,11 +46,12 @@ class DefaultProductService implements ProductService {
     }
 
     public Optional<Product> getProductByCode(String code) {
-        Optional<ProductEntity> productEntity = productRepository.findByCode(code);
-        if (productEntity.isEmpty()) {
-            return Optional.empty();
-        }
-        return productEntity.map(this::toProduct);
+//        Optional<ProductEntity> productEntity = productRepository.findByCode(code);
+//        if (productEntity.isEmpty()) {
+//            return Optional.empty();
+//        }
+//        return productEntity.map(this::toProduct);
+        return Optional.empty();
     }
 
     public void uploadProductImage(String code, String imageName, InputStream inputStream) {
@@ -60,7 +61,8 @@ class DefaultProductService implements ProductService {
     }
 
     public void updateProductImage(String code, String image) {
-        productRepository.updateProductImage(code, image);
+
+//        productRepository.updateProductImage(code, image);
     }
 
     private boolean isProductAvailable(String code) {

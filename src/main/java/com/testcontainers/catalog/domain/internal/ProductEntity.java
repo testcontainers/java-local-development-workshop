@@ -1,42 +1,30 @@
 package com.testcontainers.catalog.domain.internal;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.azure.spring.data.cosmos.core.mapping.Container;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
-@Entity
-@Table(name = "products")
-class ProductEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//@Entity
+//@Table(name = "products")
+@Container(containerName = "person", ru = "400")
+public class ProductEntity {
     private Long id;
 
-    @Column(nullable = false, unique = true)
-    @NotEmpty(message = "Product code must not be null/empty")
     private String code;
 
-    @NotEmpty(message = "Product name must not be null/empty")
-    @Column(nullable = false)
     private String name;
 
     private String description;
 
     private String image;
 
-    @NotNull(message = "Product price must not be null") @DecimalMin("0.1")
-    @Column(nullable = false)
-    private BigDecimal price;
+    private Double price;
 
     public ProductEntity() {}
 
-    public ProductEntity(Long id, String code, String name, String description, String image, BigDecimal price) {
+    public ProductEntity(Long id, String code, String name, String description, String image, Double price) {
         this.id = id;
         this.code = code;
         this.name = name;
@@ -85,11 +73,11 @@ class ProductEntity {
         this.image = image;
     }
 
-    public BigDecimal getPrice() {
+    public Double getPrice() {
         return price;
     }
 
-    public void setPrice(BigDecimal price) {
+    public void setPrice(Double price) {
         this.price = price;
     }
 }
