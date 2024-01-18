@@ -6,4 +6,4 @@ import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
 
 public record CreateProductRequest(
-        @NotEmpty String code, @NotEmpty String name, String description, @NotNull @Positive Double price) {}
+        @NotEmpty String code, @NotEmpty String name, String description, @NotNull @Positive BigDecimal price) {}
