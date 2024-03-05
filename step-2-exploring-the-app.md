@@ -30,7 +30,7 @@ and `com.testcontainers.catalog.events.ProductEventListener`.
 
 ## External Service Integrations
 Our application talks to `inventory-service` to fetch the product availability information.
-We will use [WireMock](https://wiremock.org/) to mock the `inventory-service` during local development and testing.
+We will use [Microcks](https://microcks.io/) to mock the `inventory-service` during local development and testing.
 
 ## API Endpoints
 

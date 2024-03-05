@@ -238,79 +238,96 @@ When we invoke the `GET /api/products/{code}` API endpoint,
 the application tried to call the inventory service to get the inventory details.
 As the inventory service is not running, we get the above error.
 
-Let's use WireMock to mock the inventory service APIs for our local development and testing.
+Let's use Microcks to mock the inventory service APIs for our local development and testing.
 
-## Configure WireMock
+## Configure Microcks
 Add the following dependency to your `pom.xml`:
 
 ```xml
 <dependency>
-    <groupId>org.wiremock.integrations.testcontainers</groupId>
-    <artifactId>wiremock-testcontainers-module</artifactId>
-    <version>1.0-alpha-13</version>
+    <groupId>io.github.microcks</groupId>
+    <artifactId>microcks-testcontainers</artifactId>
+    <version>0.2.4</version>
     <scope>test</scope>
 </dependency>
 ```
 
-Create `src/test/resources/mocks-config.json` to define Mock API behaviour.
+Imagine you got an OpenAPI definition for the inventory service from the service provider.
+Create `src/test/resources/inventory-openapi.yaml` with this content; this will define the Mocks behaviour:
 
-```json
-{
-  "mappings": [
-    {
-      "request": {
-        "method": "GET",
-        "urlPattern": "/api/inventory/P101"
-      },
-      "response": {
-        "status": 200,
-        "headers": {
-          "Content-Type": "application/json"
-        },
-        "jsonBody": {
-          "code": "P101",
-          "quantity": 25
-        }
-      }
-    },
-    {
-      "request": {
-        "method": "GET",
-        "urlPattern": "/api/inventory/P102"
-      },
-      "response": {
-        "status": 500,
-        "headers": {
-          "Content-Type": "application/json"
-        }
-      }
-    },
-    {
-      "request": {
-        "method": "GET",
-        "urlPattern": "/api/inventory/P103"
-      },
-      "response": {
-        "status": 200,
-        "headers": {
-          "Content-Type": "application/json"
-        },
-        "jsonBody": {
-          "code": "P103",
-          "quantity": 0
-        }
-      }
-    }
-  ]
-}
+```yaml
+openapi: 3.0.2
+info:
+  title: Inventory Service
+  version: 1.0
+  description: API definition of Inventory Service
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
+paths:
+  /api/inventory/{code}:
+    get:
+      parameters:
+        - name: code
+          description: product code
+          schema:
+            type: string
+          in: path
+          required: true
+          examples:
+            P101:
+              value: P101
+            P102:
+              value: P102
+            P103:
+              value: P103
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+              examples:
+                P101:
+                  value:
+                    code: P101
+                    quantity: 25
+                P103:
+                  value:
+                    code: P103
+                    quantity: 0
+        "500":
+          content:
+            application/json:
+              schema:
+                type: string
+              examples:
+                P102:
+                  value: ""
+components:
+  schemas:
+    Product:
+      title: Root Type for Product
+      type: object
+      properties:
+        code:
+          description: Code of this product
+          type: string
+        quantity:
+          description: Remaining quantity for this product
+          type: number
+      required:
+        - code
+        - quantity
+      additionalProperties: false
 ```
 
-Next, update the `ContainersConfig` class to configure the `WireMockContainer` as follows:
+Next, update the `ContainersConfig` class to configure the `MicrocksContainer` as follows:
 
 ```java
 package com.testcontainers.catalog;
 
-import org.wiremock.integrations.testcontainers.WireMockContainer;
+import io.github.microcks.testcontainers.MicrocksContainer;
 
 @TestConfiguration(proxyBeanMethods = false)
 public class ContainersConfig {
@@ -318,17 +335,21 @@ public class ContainersConfig {
     // [...]
 
     @Bean
-    WireMockContainer wiremockServer(DynamicPropertyRegistry registry) {
-        WireMockContainer wiremockServer = new WireMockContainer("wiremock/wiremock:3.2.0-alpine")
-                .withMappingFromResource("mocks-config.json");
-        registry.add("application.inventory-service-url", wiremockServer::getBaseUrl);
-        return wiremockServer;
+    MicrocksContainer microcksContainer(DynamicPropertyRegistry registry) {
+        MicrocksContainer microcks = new MicrocksContainer("quay.io/microcks/microcks-uber:1.8.1")
+                .withMainArtifacts("inventory-openapi.yaml")
+                .withAccessToHost(true);
+
+        registry.add(
+                "application.inventory-service-url", () -> microcks.getRestMockEndpoint("Inventory Service", "1.0"));
+
+        return microcks;
     }
 }
 ```
 
-Once the WireMock server is started, we are registering the WireMock server URL as `application.inventory-service-url`.
-So, when we make a call to `inventory-service` from our application, it will call the WireMock server instead.
+Once the Microcks server is started, we are registering the Microcks provided mock endpoint as `application.inventory-service-url`.
+So, when we make a call to `inventory-service` from our application, it will call the Microcks endpoint instead.
 
 Now restart the `TestApplication` and invoke the `GET /api/products/P101` API again.
 
@@ -367,7 +388,7 @@ You should get the following response with `"available":false` because we mocked
 }
 ```
 
-Now we have a working local development environment with PostgreSQL, Kafka, LocalStack, and WireMock.
+Now we have a working local development environment with PostgreSQL, Kafka, LocalStack, and Microcks.
 
 ### 
 [Next](step-4-connect-to-services.md)

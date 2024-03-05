@@ -1,0 +1,96 @@
+openapi: 3.0.2
+info:
+  title: Catalog Service
+  version: 1.0
+  description: API definition of Catalog Service
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
+paths:
+  /api/products/{code}:
+    get:
+      parameters:
+        - name: code
+          description: product code
+          schema:
+            type: string
+          in: path
+          required: true
+          examples:
+            P101:
+              value: P101
+            P102:
+              value: P102
+            P103:
+              value: P103
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+              examples:
+                P101:
+                  value:
+                    id: 1
+                    code: P101
+                    name: Product P101
+                    description: Product P101 description
+                    imageUrl: null
+                    price: 34.0
+                    available: true
+                P102:
+                  value:
+                    id: 1
+                    code: P101
+                    name: Product P102
+                    description: Product P102 description
+                    imageUrl: null
+                    price: 25.0
+                    available: true
+                P103:
+                  value:
+                    id: 3
+                    code: P103
+                    name: Product P103
+                    description: Product P103 description
+                    imageUrl: null
+                    price: 15.0
+                    available: false
+components:
+  schemas:
+    Product:
+      title: Root Type for catalog Product
+      type: object
+      properties:
+        id:
+          description: Unique identifier of this product
+          type: number
+        code:
+          description: Code of this product
+          type: string
+        name:
+          description: Name of this product
+          type: string
+        description:
+          description: Description of this product
+          type: string
+        imageUrl:
+          description: Url of image of this product
+          type: string
+          nullable: true
+        price:
+          description: Price of this product
+          type: number
+        available:
+          description: Availability of this product
+          type: boolean
+      required:
+        - id
+        - code
+        - name
+        - description
+        - price
+        - imageUrl
+        - available
+      additionalProperties: false
