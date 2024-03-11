@@ -74,7 +74,7 @@ This might be helpful if the internet connection at the workshop venue is somewh
 ```shell
 docker pull postgres:16-alpine
 docker pull localstack/localstack:2.3
-docker pull wiremock/wiremock:3.2.0-alpine
+docker pull quay.io/microcks/microcks-uber:1.8.1
 docker pull confluentinc/cp-kafka:7.5.0
 docker pull confluentinc/cp-schema-registry:7.5.0
 docker pull confluentinc/cp-enterprise-control-center:7.5.0

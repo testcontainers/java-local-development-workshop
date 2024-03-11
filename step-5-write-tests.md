@@ -5,7 +5,7 @@ But there is nothing more painful than working on a codebase without a comprehen
 Let's fix that!!
 
 ## Common Test SetUp
-For all the integration tests in our application, we need to start PostgreSQL, Kafka, LocalStack and WireMock containers.
+For all the integration tests in our application, we need to start PostgreSQL, Kafka, LocalStack and Microcks containers.
 So, let's create a `BaseIntegrationTest` class under `src/test/java` with the common setup as follows:
 
 ```java
@@ -19,7 +19,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
+import org.testcontainers.Testcontainers;
 
 @SpringBootTest(
     webEnvironment = RANDOM_PORT,
@@ -35,6 +35,7 @@ public abstract class BaseIntegrationTest {
     @BeforeEach
     void setUpBase() {
         RestAssured.port = port;
+        Testcontainers.exposeHostPorts(port);
     }
 }
 ```
@@ -209,9 +210,74 @@ class ProductControllerTest extends BaseIntegrationTest {
 }
 ```
 
+Checking product information like this is easy but become really cumbersome when the number of properties is growing 
+or when the `Product` class is shared among many different operations of your API. You have to check the properties
+presence but also their type and this can result in sprawling code!
+
+If you're using an "API design-first approach", the conformance of your data structure can be automatically checked by
+Microcks for you! Check the `src/main/resources/catalog-openapi.yaml` file that describes our Catalog API.
+
+Now let's create a test that uses Microcks to automatically check that our `ProductController` is conformance to this definition:
+
+```java
+import io.github.microcks.testcontainers.MicrocksContainer;
+import io.github.microcks.testcontainers.model.TestRequest;
+import io.github.microcks.testcontainers.model.TestResult;
+import io.github.microcks.testcontainers.model.TestRunnerType;
+import io.restassured.RestAssured;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.test.context.jdbc.Sql;
+
+@Sql("/test-data.sql")
+class ProductControllerTest extends BaseIntegrationTest {
+    @Autowired
+    MicrocksContainer microcks;
+
+    @Test
+    void checkOpenAPIConformance() throws Exception {
+        microcks.importAsMainArtifact(new ClassPathResource("catalog-openapi.yaml").getFile());
+
+        TestRequest testRequest = new TestRequest.Builder()
+                .serviceId("Catalog Service:1.0")
+                .runnerType(TestRunnerType.OPEN_API_SCHEMA.name())
+                .testEndpoint("http://host.testcontainers.internal:" + RestAssured.port)
+                .build();
+
+        TestResult testResult = microcks.testEndpoint(testRequest);
+
+        assertThat(testResult.isSuccess()).isTrue();
+   }
+}
+```
+
+Let's understand what's going on behind the scenes:
+* We complete the Microcks container with our additional `catalog-openapi.yaml` artifact file (this could have also
+been done within the `ContainersConfig` class at bean initialisation).
+* We prepare a `TestRequest` object that allows to specify the scope of the conformance test. Here we want to check the
+conformance of `Catalog Service` with version `1.0` that are the identifier found in `catalog-openapi.yaml`.
+* We ask Microcks to validate the `OpenAPI Schema` conformance by specifying a `runnerType`.
+* We ask Microcks to validate the localhost endpoint on the dynamic port provided by the Spring Test 
+(we use the `host.testcontainers.internal` alias for that).
+
+Finally, we're retrieving a `TestResult` from Microcks containers, and we can assert stuffs on this result, checking it's a success.
+
+During the test, Microcks has reused all the examples found in the `catalog-openapi.yaml` file to issue requests to
+our running application. It also checked that all the received responses conform to the OpenAPI definition elements:
+return codes, headers, content-type and JSON schema structure.
+
+If you want to get more details on the test done by Microcks, you can add those lines just before the `assertThat()`:
+
+```java
+        // You may inspect complete response object with following:
+        ObjectMapper mapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(testResult));
+```
+
 ## Assignment
 * Write tests for create product API fails if the payload is invalid.
 * Write tests for create product API fails if the product code already exists.
 * Write tests for get product by code API fails if the product code does not exist.
-* Write tests for get product by code API that returns `"available": false` when WireMock server return quantity=0.
-* Write tests for get product by code API that returns `"available": true` from WireMock server throws Exception.
+* Write tests for get product by code API that returns `"available": false` when Microcks server return quantity=0.
+* Write tests for get product by code API that returns `"available": true` from Microcks server throws Exception.

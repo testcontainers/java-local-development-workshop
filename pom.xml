@@ -19,7 +19,7 @@
         <java.version>17</java.version>
         <awspring.version>3.1.0</awspring.version>
         <commons-io.version>1.3.2</commons-io.version>
-        <wiremock-testcontainers-module.version>1.0-alpha-13</wiremock-testcontainers-module.version>
+        <microcks-testcontainers-module.version>0.2.4</microcks-testcontainers-module.version>
         <spotless-maven-plugin.version>2.41.1</spotless-maven-plugin.version>
     </properties>
 
@@ -125,9 +125,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.wiremock.integrations.testcontainers</groupId>
-            <artifactId>wiremock-testcontainers-module</artifactId>
-            <version>${wiremock-testcontainers-module.version}</version>
+            <groupId>io.github.microcks</groupId>
+            <artifactId>microcks-testcontainers</artifactId>
+            <version>${microcks-testcontainers-module.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
