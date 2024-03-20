@@ -14,6 +14,7 @@ import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
+import org.testcontainers.utility.MountableFile;
 
 @TestConfiguration(proxyBeanMethods = false)
 public class ContainersConfig {
@@ -21,7 +22,9 @@ public class ContainersConfig {
     @Bean
     @ServiceConnection
     PostgreSQLContainer<?> postgresContainer() {
-        return new PostgreSQLContainer<>(parse("postgres:16-alpine"));
+        PostgreSQLContainer<?> selfPostgreSQLContainer = new PostgreSQLContainer<>(parse("postgres:16-alpine"));
+
+        return selfPostgreSQLContainer;
     }
 
     @Bean
