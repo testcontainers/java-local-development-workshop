@@ -7,14 +7,14 @@ Before getting started, let's make sure you have everything you need for this wo
 You'll need Java 17 or newer for this workshop.
 Testcontainers libraries are compatible with Java 8+, but this workshop uses a Spring Boot 3.x application which requires Java 17 or newer.
 
-We would recommend using [SDKMAN](https://sdkman.io/) to install Java on your machine if you are using MacOS, Linux or Windows WSL.
+We would recommend using [SDKMAN](https://sdkman.io/) to install Java on your machine if you are using macOS, Linux or Windows WSL.
 
 ### Install Docker
 You need to have a Docker environment to use Testcontainers.
 
 * You can use Docker Desktop on your machine.
 * You can use [Testcontainers Cloud](https://testcontainers.com/cloud). If you are going to use Testcontainers Cloud, then you need to install [Testcontainers Desktop](https://testcontainers.com/desktop/) app.
-* If you are using MacOS, you can use Testcontainers Desktop Embedded Runtime.
+* If you are using macOS, you can use Testcontainers Desktop Embedded Runtime.
 
 * If you are using a local Docker, check by running:
 
